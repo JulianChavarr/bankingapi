@@ -1,6 +1,7 @@
 package com.pruebatecnica.bankingapi.controller;
 
 import com.pruebatecnica.bankingapi.dto.ClienteCreateRequest;
+import com.pruebatecnica.bankingapi.dto.ClienteUpdateRequest;
 import com.pruebatecnica.bankingapi.dto.ClienteResponse;
 import com.pruebatecnica.bankingapi.service.ClienteService;
 import jakarta.validation.Valid;
@@ -26,5 +27,13 @@ public class ClienteController {
     @GetMapping("/{id}")
     public ClienteResponse obtenerPorId(@PathVariable Long id) {
         return clienteService.obtenerPorId(id);
+    }
+
+    @PutMapping("/{id}")
+    public ClienteResponse actualizar(
+            @PathVariable Long id,
+            @Valid @RequestBody ClienteUpdateRequest request
+    ) {
+        return clienteService.actualizarCliente(id, request);
     }
 }

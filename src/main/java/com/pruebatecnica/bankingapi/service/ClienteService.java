@@ -1,6 +1,7 @@
 package com.pruebatecnica.bankingapi.service;
 
 import com.pruebatecnica.bankingapi.dto.ClienteCreateRequest;
+import com.pruebatecnica.bankingapi.dto.ClienteUpdateRequest;
 import com.pruebatecnica.bankingapi.dto.ClienteResponse;
 import com.pruebatecnica.bankingapi.entity.ClienteEntity;
 import com.pruebatecnica.bankingapi.exception.BadRequestException;
@@ -51,6 +52,37 @@ public class ClienteService {
         ClienteEntity entity = clienteRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Cliente no encontrado."));
         return toResponse(entity);
+    }
+
+    @Transactional
+    public ClienteResponse actualizarCliente(Long id, ClienteUpdateRequest req) {
+        validarMayorDeEdad(req.fechaNacimiento());
+
+        ClienteEntity entity = clienteRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("Cliente no encontrado."));
+
+        String nuevaIdent = req.numeroIdentificacion().trim();
+        String nuevoEmail = req.email().trim().toLowerCase();
+
+        if (!nuevaIdent.equals(entity.getNumeroIdentificacion())
+                && clienteRepository.existsByNumeroIdentificacion(nuevaIdent)) {
+            throw new ConflictException("Ya existe un cliente con esa identificación.");
+        }
+
+        if (!nuevoEmail.equals(entity.getEmail())
+                && clienteRepository.existsByEmail(nuevoEmail)) {
+            throw new ConflictException("Ya existe un cliente con ese email.");
+        }
+
+        entity.setTipoIdentificacion(req.tipoIdentificacion().trim());
+        entity.setNumeroIdentificacion(nuevaIdent);
+        entity.setNombres(req.nombres().trim());
+        entity.setApellido(req.apellido().trim());
+        entity.setEmail(nuevoEmail);
+        entity.setFechaNacimiento(req.fechaNacimiento());
+
+        ClienteEntity saved = clienteRepository.save(entity);
+        return toResponse(saved);
     }
 
     private void validarMayorDeEdad(LocalDate fechaNacimiento) {
