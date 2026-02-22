@@ -1,10 +1,13 @@
 package com.pruebatecnica.bankingapi.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+
+import java.util.List;
 
 @Entity
 @Table(name = "clientes")
@@ -52,4 +55,8 @@ public class ClienteEntity {
     public void preUpdate() {
         this.fechaModificacion = LocalDateTime.now();
     }
+
+    @OneToMany(mappedBy = "cliente")
+    @JsonIgnore
+    private List<CuentaEntity> cuentas;
 }

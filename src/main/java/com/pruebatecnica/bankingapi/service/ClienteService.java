@@ -14,6 +14,8 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
 import java.time.Period;
 
+import java.util.List;
+
 @Service
 public class ClienteService {
 
@@ -21,6 +23,13 @@ public class ClienteService {
 
     public ClienteService(ClienteRepository clienteRepository) {
         this.clienteRepository = clienteRepository;
+    }
+
+    public List<ClienteResponse> listar() {
+        return clienteRepository.findAll()
+                .stream()
+                .map(this::toResponse)
+                .toList();
     }
 
     @Transactional
@@ -83,6 +92,19 @@ public class ClienteService {
 
         ClienteEntity saved = clienteRepository.save(entity);
         return toResponse(saved);
+    }
+
+    @Transactional
+    public void eliminar(Long id) {
+
+        ClienteEntity cliente = clienteRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("Cliente no encontrado"));
+
+        if (cliente.getCuentas() != null && !cliente.getCuentas().isEmpty()) {
+            throw new BadRequestException("No se puede eliminar un cliente con cuentas activas");
+        }
+
+        clienteRepository.delete(cliente);
     }
 
     private void validarMayorDeEdad(LocalDate fechaNacimiento) {
